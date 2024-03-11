@@ -21,7 +21,7 @@ class RedisClient {
 
   // Get the value for a given key from Redis
   async get(key) {
-    return await this.getAsync(key);
+    return this.getAsync(key); // Removed redundant await
   }
 
   // Set a value in Redis with an expiration time
@@ -38,4 +38,3 @@ class RedisClient {
 // Create and export an instance of RedisClient
 const redisClient = new RedisClient();
 module.exports = redisClient;
-
