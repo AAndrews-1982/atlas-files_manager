@@ -27,16 +27,14 @@ class DBClient {
   }
 
   // Get the number of documents in the users collection
-  async nbUsers() {
-    return await this.db.collection('users').countDocuments();
+  nbUsers() {
+    return this.db.collection('users').countDocuments(); // Removed redundant await
   }
 
   // Get the number of documents in the files collection
-  async nbFiles() {
-    return await this.db.collection('files').countDocuments();
+  nbFiles() {
+    return this.db.collection('files').countDocuments(); // Removed redundant await
   }
 }
 
-// Create and export an instance of DBClient
-const dbClient = new DBClient();
-module.exports = dbClient;
+// Create and export an instance of DB
