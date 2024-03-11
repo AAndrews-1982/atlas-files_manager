@@ -59,6 +59,11 @@ At the end of this project, you are expected to be able to explain to anyone, wi
 - Your code should use the js extension
 - Your code will be verified against lint using ESLint
 
+
+## Provided Files
+
+#### package.json
+
 <pre>
   '''
   {
@@ -107,3 +112,113 @@ At the end of this project, you are expected to be able to explain to anyone, wi
 }
 '''
 </pre>
+
+#### .eslintrc.js
+
+<pre>
+  '''
+  module.exports = {
+    env: {
+      browser: false,
+      es6: true,
+      jest: true,
+    },
+    extends: [
+      'airbnb-base',
+      'plugin:jest/all',
+    ],
+    globals: {
+      Atomics: 'readonly',
+      SharedArrayBuffer: 'readonly',
+    },
+    parserOptions: {
+      ecmaVersion: 2018,
+      sourceType: 'module',
+    },
+    plugins: ['jest'],
+    rules: {
+      'max-classes-per-file': 'off',
+      'no-underscore-dangle': 'off',
+      'no-console': 'off',
+      'no-shadow': 'off',
+      'no-restricted-syntax': [
+        'error',
+        'LabeledStatement',
+        'WithStatement',
+      ],
+    },
+    overrides:[
+      {
+        files: ['*.js'],
+        excludedFiles: 'babel.config.js',
+      }
+    ]
+};
+  '''
+</pre>
+
+#### babel.config.js
+
+<pre>
+  '''
+  module.exports = {
+    presets: [
+      [
+        '@babel/preset-env',
+        {
+          targets: {
+            node: 'current',
+          },
+        },
+      ],
+    ],
+};
+  '''
+</pre>
+
+Don’t forget to run '$ npm install' when you have the 'package.json'
+
+#### Task 0 Redis Utils
+
+Inside the folder utils, create a file redis.js that contains the class RedisClient.
+
+RedisClient should have:
+
+- the constructor that creates a client to Redis:
+any error of the redis client must be displayed in the console (you should use on('error') of the redis client)
+- a function isAlive that returns true when the connection to Redis is a success otherwise, false
+- an asynchronous function get that takes a string key as argument and returns the Redis value stored for this key
+- an asynchronous function set that takes a string key, a value and a duration in second as arguments to store it in Redis (with an expiration set by the duration argument)
+- an asynchronous function del that takes a string key as argument and remove the value in Redis for this key
+
+After the class definition, create and export an instance of 'RedisClient' called 'redisClient'
+
+<pre>
+  '''
+  bob@dylan:~$ cat main.js
+import redisClient from './utils/redis';
+
+(async () => {
+    console.log(redisClient.isAlive());
+    console.log(await redisClient.get('myKey'));
+    await redisClient.set('myKey', 12, 5);
+    console.log(await redisClient.get('myKey'));
+
+    setTimeout(async () => {
+        console.log(await redisClient.get('myKey'));
+    }, 1000*10)
+})();
+
+bob@dylan:~$ npm run dev main.js
+true
+null
+12
+null
+bob@dylan:~$
+'''
+</pre>
+
+## Repo:
+
+- GitHub repository: atlas-files_manager
+- File: utils/redis.js
