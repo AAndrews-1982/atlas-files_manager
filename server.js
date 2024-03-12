@@ -1,11 +1,13 @@
-const express = require('express');
-const routes = require('./routes/index');
+import express from 'express'
+import controllerRouting from './routes/index';
 
-const app = express();
 const PORT = process.env.PORT || 5000;
+const app = express();
 
 // Load routes from routes/index.js
-app.use('/', routes);
+app.use(express.json);
+
+controllerRouting(app);
 
 // Start the server
 app.listen(PORT, () => {

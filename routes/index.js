@@ -1,8 +1,24 @@
-const express = require('express');
-const router = express.Router();
-const AppController = require('./controllers/AppController');
+import express from 'express';
+import AppController from '../controllers/AppController';
+import AuthController from '../controllers/AuthController';
+import FilesController from '../controllers/FilesController';
 
-router.get('/status', AppController.getStatus);
-router.get('/stats', AppController.getStats);
+function controllerRouting(app) {
+    const router = express.Router();
+    app.use('/', router);
+  
+    router.get('/status', (req, res) => {
+      AppController.getStatus(req, res);
+    });
+  
+    router.get('/stats', (req, res) => {
+      AppController.getStats(req, res);
+    });
 
-module.exports = router;
+    router.get('/connect', (req, res) => {
+        AuthController.getConnect(req, res);
+      });
+    
+      router.get('/disconnect', (req, res) => {
+        AuthController.getDisconnect(req, res);
+      })};
