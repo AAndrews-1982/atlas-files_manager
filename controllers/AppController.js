@@ -1,4 +1,4 @@
-const { isRedisAlive, isDbAlive, countUsers, countFiles } = require('../utils');
+const { isRedisAlive, isDbAlive, countUsers, countFiles } = require('./utils');
 
 const AppController = {
   getStatus: async (req, res) => {
