@@ -1,18 +1,14 @@
-import express from 'express';
 import AppController from '../controllers/AppController';
-import AuthController from '../controllers/AuthController';
 
-function controllerRouting(app) {
-  const router = express.Router();
-  app.use('/', router);
+const express = require('express');
 
-  router.get('/status', (req, res) => {
-    AppController.getStatus(req, res);
-  });
+const router = (app) => {
+  const paths = express.Router();
+  app.use(express.json());
+  app.use('/', paths);
 
-  router.get('/stats', (req, res) => {
-    AppController.getStats(req, res);
-  });
-}
+  paths.get('/status', ((request, response) => AppController.getStatus(request, response)));
+  paths.get('/stats', ((request, response) => AppController.getStats(request, response)));
+};
 
-export default controllerRouting;
+export default router;
