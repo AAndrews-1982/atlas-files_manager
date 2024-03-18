@@ -1,20 +1,18 @@
+import express from 'express';
 import AppController from '../controllers/AppController';
-import UsersController from '../controllers/UsersController';
 import AuthController from '../controllers/AuthController';
 
-const express = require('express');
+function controllerRouting(app) {
+  const router = express.Router();
+  app.use('/', router);
 
-const router = (app) => {
-  const paths = express.Router();
-  app.use(express.json());
-  app.use('/', paths);
+  router.get('/status', (req, res) => {
+    AppController.getStatus(req, res);
+  });
 
-  paths.get('/status', ((request, response) => AppController.getStatus(request, response)));
-  paths.get('/stats', ((request, response) => AppController.getStats(request, response)));
-  paths.post('/users', ((request, response) => UsersController.postNew(request, response)));
-  paths.get('/connect', ((request, response) => AuthController.getConnect(request, response)));
-  paths.get('/disconnect', ((request, response) => AuthController.getDisconnect(request, response)));
-  paths.get('/users/me', ((request, response) => UsersController.getMe(request, response)));
-};
+  router.get('/stats', (req, res) => {
+    AppController.getStats(req, res);
+  });
+}
 
-export default router;
+export default controllerRouting;
