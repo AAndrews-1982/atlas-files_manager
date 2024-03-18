@@ -1,5 +1,7 @@
 import RedisClient from '../utils/redis';
 import DBClient from '../utils/db';
+import chai from 'chai';
+import chaiHttp from 'chai-http';
 
 class AppController {
   static getStatus(request, response) {
