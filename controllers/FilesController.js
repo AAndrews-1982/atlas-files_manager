@@ -90,6 +90,6 @@ class FilesController {
       parentId: fileDataDb.parentId,
     });
   }
-};
+}
 
 module.exports = FilesController;
