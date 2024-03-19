@@ -117,6 +117,8 @@ class FilesController {
     });
 
     console.log(file);
+
+    file.id = file._id;
     if (!file) return response.status(404).send({ error: 'Not found' });
     return response.status(200).send(file);
   }
