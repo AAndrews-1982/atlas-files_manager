@@ -4,7 +4,6 @@ import DBClient from '../utils/db';
 
 const { ObjectId } = require('mongodb');
 const fs = require('fs');
-const mime = require('mime-types');
 const Bull = require('bull');
 
 class FilesController {
@@ -90,6 +89,7 @@ class FilesController {
       isPublic: fileDataDb.isPublic,
       parentId: fileDataDb.parentId,
     });
-  }};
-  
-  module.exports = FilesController;
+  }
+};
+
+module.exports = FilesController;
