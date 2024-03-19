@@ -138,10 +138,16 @@ class FilesController {
   static async getIndex(request, response) {
     const itemsPerPage = 20;
     const pagination = parseInt(request.query.page) || 1;
-    const parentId = request.query.parentId || '0';
+    let parentId = '';
     const fileCollection = await DBClient.db.collection('files');
     const user = await getUser(request, response);
     if (!user) return;
+
+    try {
+      parentId = ObjectId(request.query.parentId) || '0';
+    } catch (error) {
+      parentId = '0';
+    }
 
 
     const aggregationPipeline = [
@@ -156,7 +162,6 @@ class FilesController {
       },
     ];
 
-
     const initRes = await fileCollection
       .aggregate(aggregationPipeline)
       .toArray();
@@ -165,7 +170,10 @@ class FilesController {
       r.id = r._id;
       delete r._id;
       return r;
-    })
+    });
+
+    // console.log(await DBClient.db.collection('files').find({}).toArray());
+    console.log(results);
     response.status(200).send(results);
   }
 }
