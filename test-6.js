@@ -105,6 +105,7 @@ describe('GET /files', () => {
                 console.log(resList);
                 chai.expect(resList.length).to.equal(20);
                 
+                console.log(resList);
                 resList.forEach((item) => {
                     const itemIdx = initialFiles.findIndex((i) => i.id == item.id);
                     chai.assert.isAtLeast(itemIdx, 0);

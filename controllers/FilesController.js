@@ -156,14 +156,17 @@ class FilesController {
       },
     ];
 
-    console.log(await DBClient.db.collection('users').find({}).toArray());
 
-    const results = await fileCollection
+    const initRes = await fileCollection
       .aggregate(aggregationPipeline)
       .toArray();
 
-    console.log(results.paginatedResults);
-    response.status(200).send(results[0].paginatedResults);
+    const results = initRes[0].paginatedResults.map((r) => {
+      r.id = r._id;
+      delete r._id;
+      return r;
+    })
+    response.status(200).send(results);
   }
 }
 
