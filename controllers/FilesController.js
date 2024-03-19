@@ -138,10 +138,14 @@ class FilesController {
   static async getIndex(request, response) {
     const itemsPerPage = 20;
     const pagination = parseInt(request.query.page) || 1;
-    const parentId = parseInt(request.query.parentId) || 0;
     const fileCollection = await DBClient.db.collection('files');
     const user = await getUser(request, response);
     if (!user) return;
+
+    let parentId = request.query.parentId || 0;
+    if (parentId === '0') {
+      parentId = 0;
+    }
 
     const aggregationPipeline = [
       { $match: { parentId: { $eq: parentId } } },
