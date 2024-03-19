@@ -137,7 +137,7 @@ class FilesController {
    */
   static async getIndex(request, response) {
     const itemsPerPage = 20;
-    const pagination = parseInt(request.query.page) + 1 || 1;
+    const pagination = parseInt(request.query.page, 10) + 1 || 1;
     let parentId = '';
     const fileCollection = await DBClient.db.collection('files');
     const user = await getUser(request, response);
@@ -171,11 +171,13 @@ class FilesController {
       .aggregate(aggregationPipeline)
       .toArray();
 
-    const results = initRes[0].paginatedResults.map((r) => {
-      r.id = r._id;
-      delete r._id;
-      return r;
-    });
+    const results = [];
+    for (const r of initRes[0].paginatedResults) {
+      const newRes = {...r};
+      newRes.id = r._id;
+      delete newRes._id;
+      results.push(newRes);
+    }
 
     // console.log(await DBClient.db.collection('files').find({}).toArray());
     console.log(results, initRes[0].paginatedResults);
