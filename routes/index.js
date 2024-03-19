@@ -2,6 +2,7 @@ import AppController from '../controllers/AppController';
 import UsersController from '../controllers/UsersController';
 import AuthController from '../controllers/AuthController';
 import FilesController from '../controllers/FilesController';
+import { request } from 'chai';
 
 const express = require('express');
 
@@ -22,8 +23,8 @@ const router = (app) => {
   paths.put('/files/:id/publish', ((request, response) => FilesController.putPublish(request, response)));
   paths.put('/files/:id/unpublish', ((request, response) => FilesController.putUnpublish(request, response)));
   paths.get('/files/:id/data', ((request, response) => FilesController.getFile(request, response)));
-  paths.get('/files/:id', FilesController.getShow);
-  paths.get('/files', FilesController.getIndex);
+  paths.get('/files/:id', ((request, response) => (FilesController.getShow(request, response))));
+  paths.get('/files', ((request, response) => (FilesController.getIndex(request, response))));
 };
 
 export default router;

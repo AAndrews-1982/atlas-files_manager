@@ -123,16 +123,11 @@ class FilesController {
     const user = await getUser(request, response);
     if (!(user || imgId)) return;
 
-    console.log(user, imgId, user._id);
-
     const file = await DBClient.db.collection('files').findOne({
       userId: { $eq: user._id },
       _id: { $eq: ObjectId(imgId) },
     });
 
-    console.log(file);
-
-    file.id = file._id;
     if (!file) return response.status(404).send({ error: 'Not found' });
     return response.status(200).send(file);
   }
