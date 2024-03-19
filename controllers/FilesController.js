@@ -56,6 +56,40 @@ class FilesController {
         isPublic: fileDataDb.isPublic,
         parentId: fileDataDb.parentId,
       });
-    }}};
+    }
 
-    module.exports = FilesController;
+    const pathDir = process.env.FOLDER_PATH || '/tmp/files_manager';
+    const fileUuid = uuidv4();
+
+    const buff = Buffer.from(fileData, 'base64');
+    const pathFile = `${pathDir}/${fileUuid}`;
+
+    await fs.mkdir(pathDir, { recursive: true }, (error) => {
+      if (error) return response.status(400).send({ error: error.message });
+      return true;
+    });
+
+    await fs.writeFile(pathFile, buff, (error) => {
+      if (error) return response.status(400).send({ error: error.message });
+      return true;
+    });
+
+    fileDataDb.localPath = pathFile;
+    await DBClient.db.collection('files').insertOne(fileDataDb);
+
+    fileQueue.add({
+      userId: fileDataDb.userId,
+      fileId: fileDataDb._id,
+    });
+
+    return response.status(201).send({
+      id: fileDataDb._id,
+      userId: fileDataDb.userId,
+      name: fileDataDb.name,
+      type: fileDataDb.type,
+      isPublic: fileDataDb.isPublic,
+      parentId: fileDataDb.parentId,
+    });
+  }};
+  
+  module.exports = FilesController;
