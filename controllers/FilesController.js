@@ -121,7 +121,7 @@ class FilesController {
   static async getShow(request, response) {
     const imgId = request.params.id;
     const user = await getUser(request, response);
-    if (!(user || imgId)) return;
+    if (!(user || imgId)) return false;
 
     const file = await DBClient.db.collection('files').findOne({
       userId: { $eq: user._id },
@@ -173,7 +173,7 @@ class FilesController {
 
     const results = [];
     for (const r of initRes[0].paginatedResults) {
-      const newRes = {...r};
+      const newRes = { ...r };
       newRes.id = r._id;
       delete newRes._id;
       results.push(newRes);
