@@ -144,11 +144,16 @@ class FilesController {
     if (!user) return;
 
     try {
-      parentId = ObjectId(request.query.parentId) || '0';
+      if (request.query.parentId) {
+        parentId = ObjectId(request.query.parentId);
+      } else {
+        parentId = '0';
+      }
     } catch (error) {
       parentId = '0';
     }
 
+    console.log(parentId);
 
     const aggregationPipeline = [
       { $match: { parentId: { $eq: parentId } } },
@@ -173,7 +178,7 @@ class FilesController {
     });
 
     // console.log(await DBClient.db.collection('files').find({}).toArray());
-    console.log(results);
+    console.log(results, initRes[0].paginatedResults);
     response.status(200).send(results);
   }
 }

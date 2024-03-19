@@ -90,7 +90,7 @@ describe('GET /files', () => {
     });
         
     afterEach(() => {
-        fctRemoveAllRedisKeys();
+        // fctRemoveAllRedisKeys();
     });
 
     it('GET /files with no parentId and no page', (done) => {
@@ -98,6 +98,7 @@ describe('GET /files', () => {
             .get(`/files`)
             .set('X-Token', initialUserToken)
             .end(async (err, res) => {
+              console.log(initialUserToken);
                 chai.expect(err).to.be.null;
                 chai.expect(res).to.have.status(200);
 
