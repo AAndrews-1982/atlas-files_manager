@@ -137,7 +137,7 @@ class FilesController {
    */
   static async getIndex(request, response) {
     const itemsPerPage = 20;
-    const pagination = parseInt(request.query.page) || 1;
+    const pagination = parseInt(request.query.page) + 1 || 1;
     let parentId = '';
     const fileCollection = await DBClient.db.collection('files');
     const user = await getUser(request, response);
