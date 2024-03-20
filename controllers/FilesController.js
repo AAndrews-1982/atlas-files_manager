@@ -185,4 +185,90 @@ class FilesController {
   }
 }
 
+ // Endpoint to set isPublic to true
+  static async putPublish(request, response) {
+    const user = await getUser(request);
+    if (!user) {
+      return response.status(401).send({ error: 'Unauthorized' });
+    }
+
+    const fileId = request.params.id;
+    const file = await DBClient.db.collection('files').findOneAndUpdate(
+      { _id: ObjectId(fileId), userId: user._id },
+      { $set: { isPublic: true } },
+      { returnOriginal: false }
+    );
+
+    if (!file.value) {
+      return response.status(404).send({ error: 'Not found' });
+    }
+
+    response.status(200).send(file.value);
+  }
+
+  // Endpoint to set isPublic to false
+  static async putUnpublish(request, response) {
+    const user = await getUser(request);
+    if (!user) {
+      return response.status(401).send({ error: 'Unauthorized' });
+    }
+
+    const fileId = request.params.id;
+    const file = await DBClient.db.collection('files').findOneAndUpdate(
+      { _id: ObjectId(fileId), userId: user._id },
+      { $set: { isPublic: false } },
+      { returnOriginal: false }
+    );
+
+    if (!file.value) {
+      return response.status(404).send({ error: 'Not found' });
+    }
+
+    response.status(200).send(file.value);
+  }
+}
+
+ // Endpoint to set isPublic to true
+  static async putPublish(request, response) {
+    const user = await getUser(request);
+    if (!user) {
+      return response.status(401).send({ error: 'Unauthorized' });
+    }
+
+    const fileId = request.params.id;
+    const file = await DBClient.db.collection('files').findOneAndUpdate(
+      { _id: ObjectId(fileId), userId: user._id },
+      { $set: { isPublic: true } },
+      { returnOriginal: false }
+    );
+
+    if (!file.value) {
+      return response.status(404).send({ error: 'Not found' });
+    }
+
+    response.status(200).send(file.value);
+  }
+
+  // Endpoint to set isPublic to false
+  static async putUnpublish(request, response) {
+    const user = await getUser(request);
+    if (!user) {
+      return response.status(401).send({ error: 'Unauthorized' });
+    }
+
+    const fileId = request.params.id;
+    const file = await DBClient.db.collection('files').findOneAndUpdate(
+      { _id: ObjectId(fileId), userId: user._id },
+      { $set: { isPublic: false } },
+      { returnOriginal: false }
+    );
+
+    if (!file.value) {
+      return response.status(404).send({ error: 'Not found' });
+    }
+
+    response.status(200).send(file.value);
+  }
+}
+
 module.exports = FilesController;
