@@ -183,7 +183,6 @@ class FilesController {
     console.log(results, initRes[0].paginatedResults);
     response.status(200).send(results);
   }
-}
 
  // Endpoint to set isPublic to true
   static async putPublish(request, response) {
@@ -226,7 +225,6 @@ class FilesController {
 
     response.status(200).send(file.value);
   }
-}
 
  // Endpoint to set isPublic to true
   static async putPublish(request, response) {
@@ -248,5 +246,7 @@ class FilesController {
 
     response.status(200).send(file.value);
   }
+}
 
 module.exports = FilesController;
+
