@@ -228,6 +228,59 @@ class FilesController {
 
     response.status(200).send(file.value);
   }
+
+  static async getFile(request, response) {
+    const fileId = request.params.id;
+    if (!fileId || fileId.length !== 24) {
+      response.status(404).send({ error: 'Not found' });
+      return;
+    }
+
+    const fileDb = await DBClient.db.collection('files').findOne(
+      { _id: ObjectId(fileId) },
+    );
+
+    if (!fileDb) {
+      response.status(404).send({ error: 'Not found' });
+      return;
+    }
+
+    if (!fileDb.isPublic) {
+      const token = request.header('X-Token') || null;
+      if (!token) {
+        response.status(404).send('Not found');
+        return;
+      }
+
+      const redisToken = await RedisClient.get(`auth_${token}`);
+      if (!redisToken) {
+        response.status(404).send('Not found');
+        return;
+      }
+
+      const user = await DBClient.db
+        .collection('users')
+        .findOne({ _id: ObjectId(redisToken) });
+      if (!user) {
+        response.status(404).send('Not found');
+        return;
+      }
+
+      if (String(fileDb.userId) !== String(user._id)) {
+        response.status(404).send({ error: 'Not found' });
+        return;
+      }
+    }
+
+    // If file is a folder send 400
+    fs.readFile(String(fileDb.localPath), (err, data) => {
+      if (err) {
+        response.status(400).send({ error: "A folder doesn't have content" });
+        return;
+      }
+      response.status(200).send(data.toString());
+    });
+  }
 }
 
 module.exports = FilesController;
