@@ -1,10 +1,35 @@
 import { v4 as uuidv4 } from 'uuid';
 import RedisClient from '../utils/redis';
 import DBClient from '../utils/db';
+import mime from 'mime-types';
 
 const { ObjectId } = require('mongodb');
 const fs = require('fs');
 const Bull = require('bull');
+
+async function getUser(request, response) {
+  const token = request.header('X-Token') || null;
+  if (!token) {
+    response.status(401).send('Unauthorized');
+    return null;
+  }
+
+  const redisToken = await RedisClient.get(`auth_${token}`);
+  if (!redisToken) {
+    response.status(401).send({ error: 'Unauthorized' });
+    return null;
+  }
+
+  const user = await DBClient.db
+    .collection('users')
+    .findOne({ _id: ObjectId(redisToken) });
+  if (!user) {
+    response.status(401).send({ error: 'Unauthorized' });
+    return null;
+  }
+
+  return user;
+}
 
 class FilesController {
   static async postUpload(request, response) {
@@ -88,6 +113,178 @@ class FilesController {
       type: fileDataDb.type,
       isPublic: fileDataDb.isPublic,
       parentId: fileDataDb.parentId,
+    });
+  }
+
+  /*
+   * Retrieves a file document based on a given ID
+   */
+  static async getShow(request, response) {
+    const imgId = request.params.id;
+    const user = await getUser(request, response);
+    if (!(user || imgId)) return false;
+
+    const file = await DBClient.db.collection('files').findOne({
+      userId: { $eq: user._id },
+      _id: { $eq: ObjectId(imgId) },
+    });
+
+    if (!file) return response.status(404).send({ error: 'Not found' });
+    return response.status(200).send(file);
+  }
+
+  /*
+   * Gets a file document based on a passed parentid
+   */
+  static async getIndex(request, response) {
+    const itemsPerPage = 20;
+    const pagination = parseInt(request.query.page, 10) + 1 || 1;
+    let parentId = '';
+    const fileCollection = await DBClient.db.collection('files');
+    const user = await getUser(request, response);
+    if (!user) return;
+
+    try {
+      if (request.query.parentId) {
+        parentId = ObjectId(request.query.parentId);
+      } else {
+        parentId = '0';
+      }
+    } catch (error) {
+      parentId = '0';
+    }
+
+    const aggregationPipeline = [
+      { $match: { parentId: { $eq: parentId } } },
+      {
+        $facet: {
+          paginatedResults: [
+            { $skip: (pagination - 1) * itemsPerPage },
+            { $limit: itemsPerPage },
+          ],
+        },
+      },
+    ];
+
+    const initRes = await fileCollection
+      .aggregate(aggregationPipeline)
+      .toArray();
+
+    const results = [];
+    for (const r of initRes[0].paginatedResults) {
+      const newRes = { ...r };
+      newRes.id = r._id;
+      results.push(newRes);
+    }
+
+    response.status(200).send(results);
+  }
+
+  // Endpoint to set isPublic to false
+  static async putUnpublish(request, response) {
+    const user = await getUser(request, response);
+    if (!user) return;
+
+    const fileId = request.params.id;
+    if (!fileId || fileId.length !== 24) {
+      response.status(404).send({ error: 'Not found' });
+      return;
+    }
+
+    const file = await DBClient.db.collection('files').findOneAndUpdate(
+      { _id: ObjectId(fileId), userId: user._id },
+      { $set: { isPublic: false } },
+      { returnOriginal: false },
+    );
+
+    if (!file.value) {
+      response.status(404).send({ error: 'Not found' });
+      return;
+    }
+
+    response.status(200).send(file.value);
+  }
+
+  // Endpoint to set isPublic to true
+  static async putPublish(request, response) {
+    const user = await getUser(request, response);
+    if (!user) return;
+
+    const fileId = request.params.id;
+    if (!fileId || fileId.length !== 24) {
+      response.status(404).send({ error: 'Not found' });
+      return;
+    }
+
+    const file = await DBClient.db.collection('files').findOneAndUpdate(
+      { _id: ObjectId(fileId), userId: user._id },
+      { $set: { isPublic: true } },
+      { returnOriginal: false },
+    );
+
+    if (!file.value) {
+      response.status(404).send({ error: 'Not found' });
+      return;
+    }
+
+    response.status(200).send(file.value);
+  }
+
+  static async getFile(request, response) {
+    const fileId = request.params.id;
+    if (!fileId || fileId.length !== 24) {
+      response.status(404).send({ error: 'Not found' });
+      return;
+    }
+
+    const fileDb = await DBClient.db.collection('files').findOne(
+      { _id: ObjectId(fileId) },
+    );
+
+    if (!fileDb) {
+      response.status(404).send({ error: 'Not found' });
+      return;
+    }
+
+    if (!fileDb.isPublic) {
+      const token = request.header('X-Token') || null;
+      if (!token) {
+        response.status(404).send('Not found');
+        return;
+      }
+
+      const redisToken = await RedisClient.get(`auth_${token}`);
+      if (!redisToken) {
+        response.status(404).send('Not found');
+        return;
+      }
+
+      const user = await DBClient.db
+        .collection('users')
+        .findOne({ _id: ObjectId(redisToken) });
+      if (!user) {
+        response.status(404).send('Not found');
+        return;
+      }
+
+      if (String(fileDb.userId) !== String(user._id)) {
+        response.status(404).send({ error: 'Not found' });
+        return;
+      }
+    }
+
+    fs.readFile(String(fileDb.localPath), (err, data) => {
+      if (err) {
+        console.log(err);
+        response.status(400).send({ error: "A folder doesn't have content" });
+        return;
+      }
+      console.log(fileDb.localPath, String(fileDb.localPath));
+      const contentType = mime.lookup(fileDb.localPath) || 'text/plain';
+      console.log(data.toString());
+      console.log(contentType);
+      response.setHeader('Content-Type', contentType);
+      response.status(200).send(data.toString());
     });
   }
 }
