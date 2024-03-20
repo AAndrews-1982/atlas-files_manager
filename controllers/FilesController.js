@@ -8,7 +8,6 @@ const Bull = require('bull');
 
 async function getUser(request, response) {
   const token = request.header('X-Token') || null;
-  console.log(response.status);
   if (!token) {
     response.status(401).send('Unauthorized');
     return null;
@@ -154,7 +153,6 @@ class FilesController {
       parentId = '0';
     }
 
-    console.log(parentId);
 
     const aggregationPipeline = [
       { $match: { parentId: { $eq: parentId } } },
@@ -179,27 +177,7 @@ class FilesController {
       results.push(newRes);
     }
 
-    // console.log(await DBClient.db.collection('files').find({}).toArray());
-    console.log(results, initRes[0].paginatedResults);
-    response.status(200).send(results);
-  }
-
- // Endpoint to set isPublic to true
-  static async putPublish(request, response) {
-    const user = await getUser(request, response);
-
-    const fileId = request.params.id;
-    const file = await DBClient.db.collection('files').findOneAndUpdate(
-      { _id: ObjectId(fileId), userId: user._id },
-      { $set: { isPublic: true } },
-      { returnOriginal: false }
-    );
-
-    if (!file.value) {
-      return response.status(404).send({ error: 'Not found' });
-    }
-
-    response.status(200).send(file.value);
+    return response.status(200).send(results);
   }
 
   // Endpoint to set isPublic to false
