@@ -153,7 +153,6 @@ class FilesController {
       parentId = '0';
     }
 
-
     const aggregationPipeline = [
       { $match: { parentId: { $eq: parentId } } },
       {
@@ -177,7 +176,7 @@ class FilesController {
       results.push(newRes);
     }
 
-    return response.status(200).send(results);
+    response.status(200).send(results);
   }
 
   // Endpoint to set isPublic to false
@@ -186,8 +185,9 @@ class FilesController {
     if (!user) return;
 
     const fileId = request.params.id;
-    if (!fileId || fileId.length !== 24){
-      return response.status(404).send({ error: 'Not found' });
+    if (!fileId || fileId.length !== 24) {
+      response.status(404).send({ error: 'Not found' });
+      return;
     }
 
     const file = await DBClient.db.collection('files').findOneAndUpdate(
@@ -197,10 +197,11 @@ class FilesController {
     );
 
     if (!file.value) {
-      return response.status(404).send({ error: 'Not found' });
+      response.status(404).send({ error: 'Not found' });
+      return;
     }
 
-    return response.status(200).send(file.value);
+    response.status(200).send(file.value);
   }
 
   // Endpoint to set isPublic to true
@@ -210,7 +211,8 @@ class FilesController {
 
     const fileId = request.params.id;
     if (!fileId || fileId.length !== 24) {
-      return response.status(404).send({ error: 'Not found' });
+      response.status(404).send({ error: 'Not found' });
+      return;
     }
 
     const file = await DBClient.db.collection('files').findOneAndUpdate(
@@ -220,10 +222,11 @@ class FilesController {
     );
 
     if (!file.value) {
-      return response.status(404).send({ error: 'Not found' });
+      response.status(404).send({ error: 'Not found' });
+      return;
     }
 
-    return response.status(200).send(file.value);
+    response.status(200).send(file.value);
   }
 }
 
