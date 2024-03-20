@@ -8,6 +8,7 @@ const Bull = require('bull');
 
 async function getUser(request, response) {
   const token = request.header('X-Token') || null;
+  console.log(response.status);
   if (!token) {
     response.status(401).send('Unauthorized');
     return null;
@@ -175,7 +176,6 @@ class FilesController {
     for (const r of initRes[0].paginatedResults) {
       const newRes = { ...r };
       newRes.id = r._id;
-      delete newRes._id;
       results.push(newRes);
     }
 
@@ -186,10 +186,7 @@ class FilesController {
 
  // Endpoint to set isPublic to true
   static async putPublish(request, response) {
-    const user = await getUser(request);
-    if (!user) {
-      return response.status(401).send({ error: 'Unauthorized' });
-    }
+    const user = await getUser(request, response);
 
     const fileId = request.params.id;
     const file = await DBClient.db.collection('files').findOneAndUpdate(
@@ -207,46 +204,49 @@ class FilesController {
 
   // Endpoint to set isPublic to false
   static async putUnpublish(request, response) {
-    const user = await getUser(request);
-    if (!user) {
-      return response.status(401).send({ error: 'Unauthorized' });
-    }
+    const user = await getUser(request, response);
+    if (!user) return;
 
     const fileId = request.params.id;
+    if (!fileId || fileId.length !== 24){
+      return response.status(404).send({ error: 'Not found' });
+    }
+
     const file = await DBClient.db.collection('files').findOneAndUpdate(
       { _id: ObjectId(fileId), userId: user._id },
       { $set: { isPublic: false } },
-      { returnOriginal: false }
+      { returnOriginal: false },
     );
 
     if (!file.value) {
       return response.status(404).send({ error: 'Not found' });
     }
 
-    response.status(200).send(file.value);
+    return response.status(200).send(file.value);
   }
 
- // Endpoint to set isPublic to true
+  // Endpoint to set isPublic to true
   static async putPublish(request, response) {
-    const user = await getUser(request);
-    if (!user) {
-      return response.status(401).send({ error: 'Unauthorized' });
-    }
+    const user = await getUser(request, response);
+    if (!user) return;
 
     const fileId = request.params.id;
+    if (!fileId || fileId.length !== 24) {
+      return response.status(404).send({ error: 'Not found' });
+    }
+
     const file = await DBClient.db.collection('files').findOneAndUpdate(
       { _id: ObjectId(fileId), userId: user._id },
       { $set: { isPublic: true } },
-      { returnOriginal: false }
+      { returnOriginal: false },
     );
 
     if (!file.value) {
       return response.status(404).send({ error: 'Not found' });
     }
 
-    response.status(200).send(file.value);
+    return response.status(200).send(file.value);
   }
 }
 
 module.exports = FilesController;
-
