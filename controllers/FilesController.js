@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import RedisClient from '../utils/redis';
 import DBClient from '../utils/db';
+import mime from 'mime-types';
 
 const { ObjectId } = require('mongodb');
 const fs = require('fs');
@@ -272,12 +273,17 @@ class FilesController {
       }
     }
 
-    // If file is a folder send 400
     fs.readFile(String(fileDb.localPath), (err, data) => {
       if (err) {
+        console.log(err);
         response.status(400).send({ error: "A folder doesn't have content" });
         return;
       }
+      console.log(fileDb.localPath, String(fileDb.localPath));
+      const contentType = mime.lookup(fileDb.localPath) || 'text/plain';
+      console.log(data.toString());
+      console.log(contentType);
+      response.setHeader('Content-Type', contentType);
       response.status(200).send(data.toString());
     });
   }
